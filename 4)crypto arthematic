@@ -1,0 +1,37 @@
+from itertools import permutations
+
+def remove_leading_zeros(expression):
+    # Function to remove leading zeros from numbers in the expression
+    parts = expression.split()
+    for i in range(len(parts)):
+        if parts[i].isdigit():
+            parts[i] = str(int(parts[i]))
+    return ' '.join(parts)
+
+def solve_cryptarithmetic(puzzle):
+    # Extracting unique characters from the puzzle
+    letters = ''.join(set(filter(str.isalpha, puzzle)))
+    if len(letters) > 10:
+        return "Invalid puzzle: More than 10 unique letters."
+
+    # Generate permutations for the unique letters
+    for perm in permutations('0123456789', len(letters)):
+        # Map each letter to a digit
+        mapping = dict(zip(letters, perm))
+        # Replace letters with corresponding digits
+        expression = puzzle.translate(str.maketrans(mapping))
+        # Split the expression to handle the equality comparison
+        left, right = expression.split('==')
+        # Remove leading zeros before evaluation
+        left = remove_leading_zeros(left)
+        right = remove_leading_zeros(right)
+        # Check if the expression is valid
+        if eval(left) == eval(right):
+            return mapping
+
+    return "No solution found."
+
+# Example usage:
+puzzle = "SEND + MORE == MONEY"
+solution = solve_cryptarithmetic(puzzle)
+print("Solution:", solution)
