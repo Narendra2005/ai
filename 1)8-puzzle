@@ -1,0 +1,87 @@
+import heapq
+
+class PuzzleState:
+    def __init__(self, state, parent=None, move="Initial", depth=0):
+        self.state = state
+        self.parent = parent
+        self.move = move
+        self.depth = depth
+        self.cost = self.calculate_cost()
+    
+    def __lt__(self, other):
+        return self.cost < other.cost
+    
+    def __eq__(self, other):
+        return self.state == other.state
+    
+    def __hash__(self):
+        return hash(str(self.state))
+    
+    def get_blank_position(self):
+        for i in range(3):
+            for j in range(3):
+                if self.state[i][j] == 0:
+                    return i, j
+    
+    def calculate_cost(self):
+        cost = 0
+        goal_state = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
+        for i in range(3):
+            for j in range(3):
+                if self.state[i][j] != goal_state[i][j]:
+                    cost += 1
+        return cost + self.depth
+
+    def generate_child(self):
+        children = []
+        i, j = self.get_blank_position()
+        directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        for di, dj in directions:
+            new_i, new_j = i + di, j + dj
+            if 0 <= new_i < 3 and 0 <= new_j < 3:
+                new_state = [row[:] for row in self.state]
+                new_state[i][j], new_state[new_i][new_j] = new_state[new_i][new_j], new_state[i][j]
+                children.append(PuzzleState(new_state, parent=self, move=(new_i, new_j), depth=self.depth + 1))
+        return children
+
+    def print_state(self):
+        for row in self.state:
+            print(row)
+        print("---------")
+
+def astar(initial_state):
+    open_list = []
+    closed_list = set()
+    heapq.heappush(open_list, initial_state)
+    
+    while open_list:
+        current_state = heapq.heappop(open_list)
+        closed_list.add(current_state)
+        
+        if current_state.state == [[1, 2, 3], [4, 5, 6], [7, 8, 0]]:
+            path = []
+            while current_state.parent:
+                path.append((current_state.move, current_state.state))
+                current_state = current_state.parent
+            path.append((current_state.move, current_state.state))
+            path.reverse()
+            return path
+        
+        for child in current_state.generate_child():
+            if child in closed_list:
+                continue
+            if child not in open_list:
+                heapq.heappush(open_list, child)
+            else:
+                for state in open_list:
+                    if state == child and state.cost > child.cost:
+                        open_list.remove(state)
+                        open_list.append(child)
+                        heapq.heapify(open_list)
+
+if __name__ == "__main__":
+    initial_state = PuzzleState([[2, 3, 6], [1, 5, 0], [4, 7, 8]])
+    path = astar(initial_state)
+    for move, state in path:
+        print(f"Move: {move}")
+        PuzzleState(state).print_state()
