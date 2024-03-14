@@ -1,0 +1,44 @@
+def isSafe(board, row, col):
+    # Check if there is a queen in the same row
+    for i in range(col):
+        if board[row][i] == 1:
+            return False
+
+    # Check upper diagonal on the left side
+    for i, j in zip(range(row, -1, -1), range(col, -1, -1)):
+        if board[i][j] == 1:
+            return False
+
+    # Check lower diagonal on the left side
+    for i, j in zip(range(row, N, 1), range(col, -1, -1)):
+        if board[i][j] == 1:
+            return False
+
+    return True
+
+def solveNQueens(board, col):
+    if col >= N:
+        return True
+
+    for i in range(N):
+        if isSafe(board, i, col):
+            board[i][col] = 1
+
+            if solveNQueens(board, col + 1):
+                return True
+
+            board[i][col] = 0
+
+    return False
+
+def printSolution(board):
+    for i in range(N):
+        print(board[i])
+
+N = 8
+board = [[0 for _ in range(N)] for _ in range(N)]
+
+if solveNQueens(board, 0) is False:
+    print("Solution does not exist")
+else:
+    printSolution(board)
